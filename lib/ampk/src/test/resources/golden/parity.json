@@ -1,0 +1,102 @@
+{
+  "corpus_text": "ሰላም እንደምን አለህ።\nሰላም እንደምን አለሽ።\nደህና ነኝ አመሰግናለሁ።\nነገ ወደ ቤት እሄዳለሁ።\nነገ ወደ ስራ እሄዳለሁ።\nነገ ወደ ቢሮ እሄዳለሁ።\nዛሬ ስራ ብዙ ነው።\nእኔ ተማሪ ነኝ።\nእሷ መምህር ናት።\nእኛ ወደ ገበያ እንሄዳለን።\nቡና መጠጣት እወዳለሁ።\nጥሩ ቀን ይሁንልህ።\nአመሰግናለሁ በጣም።\nይቅርታ አልገባኝም።\nስምህ ማን ነው።\nስሜ አበበ ነው።\nከየት ነህ።\nከአዲስ አበባ ነኝ።\nነገ እገናኝሃለሁ።\nነገ እመጣለሁ።\nመልካም ቀን ይሁንልህ።\nመልካም ምሽት።\nእንኳን ደህና መጣህ።\nውሃ ጠጣሁ።\nምሳ በላን።\nቤቴ ቅርብ ነው።\nስራዬ ከባድ ነው።\nልጆቹ ትምህርት ቤት ሄዱ።\nአባቴ ገበሬ ነው።\nእናቴ ነጋዴ ናት።\nሰላምታ አቀረበ።\nሰላማዊ ሰልፍ ነበር።\nመጽሐፍ አነበብኩ።\nቴሌቪዥን አየሁ።\nሙዚቃ አዳመጥኩ።\nነገ ወደ ቤት እመጣለሁ።\nዛሬ ወደ ስራ ሄድኩ።\nእኔ ቡና እወዳለሁ።\nእሷ ሻይ ትወዳለች።\nአዲስ አበባ ትልቅ ከተማ ናት።\n",
+  "calls": [
+    {
+      "op": "suggest",
+      "text": "ሰላ",
+      "shown": [
+        "ሰላም",
+        "ሰላማዊ",
+        "ሰላምታ"
+      ]
+    },
+    {
+      "op": "suggest",
+      "text": "ሠላ",
+      "shown": [
+        "ሰላም",
+        "ሰላማዊ",
+        "ሰላምታ"
+      ]
+    },
+    {
+      "op": "suggest",
+      "text": "ነገ ወደ ",
+      "shown": [
+        "ቤት",
+        "ስራ",
+        "ቢሮ"
+      ]
+    },
+    {
+      "op": "commit",
+      "word": "ሰላም",
+      "accepted": true,
+      "context": [],
+      "committed": "ሰላም",
+      "autocorrect_applied": false,
+      "correction": "ሰላም"
+    },
+    {
+      "op": "commit",
+      "word": "ቤታ",
+      "accepted": false,
+      "context": [
+        "ወደ"
+      ],
+      "committed": "ቤት",
+      "autocorrect_applied": true,
+      "correction": "ቤት"
+    },
+    {
+      "op": "commit",
+      "word": "ሠላም",
+      "accepted": false,
+      "context": [],
+      "committed": "ሰላም",
+      "autocorrect_applied": true,
+      "correction": "ሰላም"
+    },
+    {
+      "op": "commit",
+      "word": "ስራዬ",
+      "accepted": true,
+      "context": [
+        "የኔ"
+      ],
+      "committed": "ስራዬ",
+      "autocorrect_applied": false,
+      "correction": "ስራዬ"
+    },
+    {
+      "op": "commit",
+      "word": "ስራዬ",
+      "accepted": true,
+      "context": [
+        "የኔ"
+      ],
+      "committed": "ስራዬ",
+      "autocorrect_applied": false,
+      "correction": "ስራዬ"
+    },
+    {
+      "op": "suggest",
+      "text": "ስራ",
+      "shown": [
+        "ስራዬ",
+        "ስራ"
+      ]
+    },
+    {
+      "op": "commit",
+      "word": "ቤት",
+      "accepted": false,
+      "context": [
+        "ወደ"
+      ],
+      "committed": "ቤት",
+      "autocorrect_applied": false,
+      "correction": "ቤት"
+    }
+  ]
+}

@@ -44,6 +44,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(":app")
 //include(":benchmark")
+include(":lib:ampk")
 include(":lib:android")
 include(":lib:color")
 include(":lib:compose")
