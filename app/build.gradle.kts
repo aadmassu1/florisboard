@@ -211,6 +211,7 @@ dependencies {
     implementation(libs.patrickgold.jetpref.datastore.ui)
     implementation(libs.patrickgold.jetpref.material.ui)
 
+    implementation(projects.lib.ampk)
     implementation(projects.lib.android)
     implementation(projects.lib.color)
     implementation(projects.lib.compose)
