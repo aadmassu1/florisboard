@@ -6,10 +6,6 @@
       "popup": {
         "relevant": [
           {
-            "code": 4672,
-            "label": "ቀ"
-          },
-          {
             "code": 4673,
             "label": "ቁ"
           },
@@ -32,6 +28,26 @@
           {
             "code": 4678,
             "label": "ቆ"
+          },
+          {
+            "code": 4680,
+            "label": "ቈ"
+          },
+          {
+            "code": 4682,
+            "label": "ቊ"
+          },
+          {
+            "code": 4683,
+            "label": "ቋ"
+          },
+          {
+            "code": 4684,
+            "label": "ቌ"
+          },
+          {
+            "code": 4685,
+            "label": "ቍ"
           }
         ]
       }
@@ -41,10 +57,6 @@
       "label": "ወ",
       "popup": {
         "relevant": [
-          {
-            "code": 4808,
-            "label": "ወ"
-          },
           {
             "code": 4809,
             "label": "ዉ"
@@ -68,6 +80,10 @@
           {
             "code": 4814,
             "label": "ዎ"
+          },
+          {
+            "code": 4815,
+            "label": "ዏ"
           }
         ]
       }
@@ -94,10 +110,6 @@
             "label": "ኣ"
           },
           {
-            "code": 4772,
-            "label": "ኤ"
-          },
-          {
             "code": 4773,
             "label": "እ"
           },
@@ -113,10 +125,6 @@
       "label": "ረ",
       "popup": {
         "relevant": [
-          {
-            "code": 4648,
-            "label": "ረ"
-          },
           {
             "code": 4649,
             "label": "ሩ"
@@ -140,6 +148,10 @@
           {
             "code": 4654,
             "label": "ሮ"
+          },
+          {
+            "code": 4655,
+            "label": "ሯ"
           }
         ]
       }
@@ -149,10 +161,6 @@
       "label": "ተ",
       "popup": {
         "relevant": [
-          {
-            "code": 4720,
-            "label": "ተ"
-          },
           {
             "code": 4721,
             "label": "ቱ"
@@ -178,8 +186,8 @@
             "label": "ቶ"
           },
           {
-            "code": 4896,
-            "label": "ጠ"
+            "code": 4727,
+            "label": "ቷ"
           }
         ]
       }
@@ -189,10 +197,6 @@
       "label": "የ",
       "popup": {
         "relevant": [
-          {
-            "code": 4840,
-            "label": "የ"
-          },
           {
             "code": 4841,
             "label": "ዩ"
@@ -216,6 +220,10 @@
           {
             "code": 4846,
             "label": "ዮ"
+          },
+          {
+            "code": 4847,
+            "label": "ዯ"
           }
         ]
       }
@@ -228,10 +236,6 @@
           {
             "code": 4768,
             "label": "አ"
-          },
-          {
-            "code": 4769,
-            "label": "ኡ"
           },
           {
             "code": 4770,
@@ -268,10 +272,6 @@
           {
             "code": 4769,
             "label": "ኡ"
-          },
-          {
-            "code": 4770,
-            "label": "ኢ"
           },
           {
             "code": 4771,
@@ -320,10 +320,6 @@
           {
             "code": 4773,
             "label": "እ"
-          },
-          {
-            "code": 4774,
-            "label": "ኦ"
           }
         ]
       }
@@ -333,10 +329,6 @@
       "label": "ፐ",
       "popup": {
         "relevant": [
-          {
-            "code": 4944,
-            "label": "ፐ"
-          },
           {
             "code": 4945,
             "label": "ፑ"
@@ -362,8 +354,8 @@
             "label": "ፖ"
           },
           {
-            "code": 4912,
-            "label": "ጰ"
+            "code": 4951,
+            "label": "ፗ"
           }
         ]
       }
@@ -375,10 +367,6 @@
       "label": "አ",
       "popup": {
         "relevant": [
-          {
-            "code": 4768,
-            "label": "አ"
-          },
           {
             "code": 4769,
             "label": "ኡ"
@@ -402,10 +390,6 @@
           {
             "code": 4774,
             "label": "ኦ"
-          },
-          {
-            "code": 4816,
-            "label": "ዐ"
           }
         ]
       }
@@ -415,10 +399,6 @@
       "label": "ሰ",
       "popup": {
         "relevant": [
-          {
-            "code": 4656,
-            "label": "ሰ"
-          },
           {
             "code": 4657,
             "label": "ሱ"
@@ -444,16 +424,8 @@
             "label": "ሶ"
           },
           {
-            "code": 4640,
-            "label": "ሠ"
-          },
-          {
-            "code": 4920,
-            "label": "ጸ"
-          },
-          {
-            "code": 4928,
-            "label": "ፀ"
+            "code": 4663,
+            "label": "ሷ"
           }
         ]
       }
@@ -463,10 +435,6 @@
       "label": "ደ",
       "popup": {
         "relevant": [
-          {
-            "code": 4848,
-            "label": "ደ"
-          },
           {
             "code": 4849,
             "label": "ዱ"
@@ -490,6 +458,10 @@
           {
             "code": 4854,
             "label": "ዶ"
+          },
+          {
+            "code": 4855,
+            "label": "ዷ"
           }
         ]
       }
@@ -499,10 +471,6 @@
       "label": "ፈ",
       "popup": {
         "relevant": [
-          {
-            "code": 4936,
-            "label": "ፈ"
-          },
           {
             "code": 4937,
             "label": "ፉ"
@@ -526,6 +494,10 @@
           {
             "code": 4942,
             "label": "ፎ"
+          },
+          {
+            "code": 4943,
+            "label": "ፏ"
           }
         ]
       }
@@ -535,10 +507,6 @@
       "label": "ገ",
       "popup": {
         "relevant": [
-          {
-            "code": 4872,
-            "label": "ገ"
-          },
           {
             "code": 4873,
             "label": "ጉ"
@@ -562,6 +530,26 @@
           {
             "code": 4878,
             "label": "ጎ"
+          },
+          {
+            "code": 4880,
+            "label": "ጐ"
+          },
+          {
+            "code": 4882,
+            "label": "ጒ"
+          },
+          {
+            "code": 4883,
+            "label": "ጓ"
+          },
+          {
+            "code": 4884,
+            "label": "ጔ"
+          },
+          {
+            "code": 4885,
+            "label": "ጕ"
           }
         ]
       }
@@ -571,10 +559,6 @@
       "label": "ሀ",
       "popup": {
         "relevant": [
-          {
-            "code": 4608,
-            "label": "ሀ"
-          },
           {
             "code": 4609,
             "label": "ሁ"
@@ -600,12 +584,8 @@
             "label": "ሆ"
           },
           {
-            "code": 4624,
-            "label": "ሐ"
-          },
-          {
-            "code": 4736,
-            "label": "ኀ"
+            "code": 4615,
+            "label": "ሇ"
           }
         ]
       }
@@ -615,10 +595,6 @@
       "label": "ጀ",
       "popup": {
         "relevant": [
-          {
-            "code": 4864,
-            "label": "ጀ"
-          },
           {
             "code": 4865,
             "label": "ጁ"
@@ -642,6 +618,10 @@
           {
             "code": 4870,
             "label": "ጆ"
+          },
+          {
+            "code": 4871,
+            "label": "ጇ"
           }
         ]
       }
@@ -651,10 +631,6 @@
       "label": "ከ",
       "popup": {
         "relevant": [
-          {
-            "code": 4776,
-            "label": "ከ"
-          },
           {
             "code": 4777,
             "label": "ኩ"
@@ -680,8 +656,24 @@
             "label": "ኮ"
           },
           {
-            "code": 4792,
-            "label": "ኸ"
+            "code": 4784,
+            "label": "ኰ"
+          },
+          {
+            "code": 4786,
+            "label": "ኲ"
+          },
+          {
+            "code": 4787,
+            "label": "ኳ"
+          },
+          {
+            "code": 4788,
+            "label": "ኴ"
+          },
+          {
+            "code": 4789,
+            "label": "ኵ"
           }
         ]
       }
@@ -691,10 +683,6 @@
       "label": "ለ",
       "popup": {
         "relevant": [
-          {
-            "code": 4616,
-            "label": "ለ"
-          },
           {
             "code": 4617,
             "label": "ሉ"
@@ -718,6 +706,10 @@
           {
             "code": 4622,
             "label": "ሎ"
+          },
+          {
+            "code": 4623,
+            "label": "ሏ"
           }
         ]
       }
@@ -729,10 +721,6 @@
       "label": "ዘ",
       "popup": {
         "relevant": [
-          {
-            "code": 4824,
-            "label": "ዘ"
-          },
           {
             "code": 4825,
             "label": "ዙ"
@@ -758,8 +746,8 @@
             "label": "ዞ"
           },
           {
-            "code": 4832,
-            "label": "ዠ"
+            "code": 4831,
+            "label": "ዟ"
           }
         ]
       }
@@ -769,10 +757,6 @@
       "label": "ሸ",
       "popup": {
         "relevant": [
-          {
-            "code": 4664,
-            "label": "ሸ"
-          },
           {
             "code": 4665,
             "label": "ሹ"
@@ -796,6 +780,10 @@
           {
             "code": 4670,
             "label": "ሾ"
+          },
+          {
+            "code": 4671,
+            "label": "ሿ"
           }
         ]
       }
@@ -805,10 +793,6 @@
       "label": "ቸ",
       "popup": {
         "relevant": [
-          {
-            "code": 4728,
-            "label": "ቸ"
-          },
           {
             "code": 4729,
             "label": "ቹ"
@@ -834,8 +818,8 @@
             "label": "ቾ"
           },
           {
-            "code": 4904,
-            "label": "ጨ"
+            "code": 4735,
+            "label": "ቿ"
           }
         ]
       }
@@ -845,10 +829,6 @@
       "label": "ቨ",
       "popup": {
         "relevant": [
-          {
-            "code": 4712,
-            "label": "ቨ"
-          },
           {
             "code": 4713,
             "label": "ቩ"
@@ -872,6 +852,10 @@
           {
             "code": 4718,
             "label": "ቮ"
+          },
+          {
+            "code": 4719,
+            "label": "ቯ"
           }
         ]
       }
@@ -881,10 +865,6 @@
       "label": "በ",
       "popup": {
         "relevant": [
-          {
-            "code": 4704,
-            "label": "በ"
-          },
           {
             "code": 4705,
             "label": "ቡ"
@@ -908,6 +888,10 @@
           {
             "code": 4710,
             "label": "ቦ"
+          },
+          {
+            "code": 4711,
+            "label": "ቧ"
           }
         ]
       }
@@ -917,10 +901,6 @@
       "label": "ነ",
       "popup": {
         "relevant": [
-          {
-            "code": 4752,
-            "label": "ነ"
-          },
           {
             "code": 4753,
             "label": "ኑ"
@@ -946,8 +926,8 @@
             "label": "ኖ"
           },
           {
-            "code": 4760,
-            "label": "ኘ"
+            "code": 4759,
+            "label": "ኗ"
           }
         ]
       }
@@ -957,10 +937,6 @@
       "label": "መ",
       "popup": {
         "relevant": [
-          {
-            "code": 4632,
-            "label": "መ"
-          },
           {
             "code": 4633,
             "label": "ሙ"
@@ -984,6 +960,472 @@
           {
             "code": 4638,
             "label": "ሞ"
+          },
+          {
+            "code": 4639,
+            "label": "ሟ"
+          }
+        ]
+      }
+    }
+  ],
+  [
+    {
+      "code": 4624,
+      "label": "ሐ",
+      "popup": {
+        "relevant": [
+          {
+            "code": 4625,
+            "label": "ሑ"
+          },
+          {
+            "code": 4626,
+            "label": "ሒ"
+          },
+          {
+            "code": 4627,
+            "label": "ሓ"
+          },
+          {
+            "code": 4628,
+            "label": "ሔ"
+          },
+          {
+            "code": 4629,
+            "label": "ሕ"
+          },
+          {
+            "code": 4630,
+            "label": "ሖ"
+          },
+          {
+            "code": 4631,
+            "label": "ሗ"
+          }
+        ]
+      }
+    },
+    {
+      "code": 4736,
+      "label": "ኀ",
+      "popup": {
+        "relevant": [
+          {
+            "code": 4737,
+            "label": "ኁ"
+          },
+          {
+            "code": 4738,
+            "label": "ኂ"
+          },
+          {
+            "code": 4739,
+            "label": "ኃ"
+          },
+          {
+            "code": 4740,
+            "label": "ኄ"
+          },
+          {
+            "code": 4741,
+            "label": "ኅ"
+          },
+          {
+            "code": 4742,
+            "label": "ኆ"
+          },
+          {
+            "code": 4744,
+            "label": "ኈ"
+          },
+          {
+            "code": 4746,
+            "label": "ኊ"
+          },
+          {
+            "code": 4747,
+            "label": "ኋ"
+          },
+          {
+            "code": 4748,
+            "label": "ኌ"
+          },
+          {
+            "code": 4749,
+            "label": "ኍ"
+          }
+        ]
+      }
+    },
+    {
+      "code": 4640,
+      "label": "ሠ",
+      "popup": {
+        "relevant": [
+          {
+            "code": 4641,
+            "label": "ሡ"
+          },
+          {
+            "code": 4642,
+            "label": "ሢ"
+          },
+          {
+            "code": 4643,
+            "label": "ሣ"
+          },
+          {
+            "code": 4644,
+            "label": "ሤ"
+          },
+          {
+            "code": 4645,
+            "label": "ሥ"
+          },
+          {
+            "code": 4646,
+            "label": "ሦ"
+          },
+          {
+            "code": 4647,
+            "label": "ሧ"
+          }
+        ]
+      }
+    },
+    {
+      "code": 4816,
+      "label": "ዐ",
+      "popup": {
+        "relevant": [
+          {
+            "code": 4817,
+            "label": "ዑ"
+          },
+          {
+            "code": 4818,
+            "label": "ዒ"
+          },
+          {
+            "code": 4819,
+            "label": "ዓ"
+          },
+          {
+            "code": 4820,
+            "label": "ዔ"
+          },
+          {
+            "code": 4821,
+            "label": "ዕ"
+          },
+          {
+            "code": 4822,
+            "label": "ዖ"
+          }
+        ]
+      }
+    },
+    {
+      "code": 4832,
+      "label": "ዠ",
+      "popup": {
+        "relevant": [
+          {
+            "code": 4833,
+            "label": "ዡ"
+          },
+          {
+            "code": 4834,
+            "label": "ዢ"
+          },
+          {
+            "code": 4835,
+            "label": "ዣ"
+          },
+          {
+            "code": 4836,
+            "label": "ዤ"
+          },
+          {
+            "code": 4837,
+            "label": "ዥ"
+          },
+          {
+            "code": 4838,
+            "label": "ዦ"
+          },
+          {
+            "code": 4839,
+            "label": "ዧ"
+          }
+        ]
+      }
+    },
+    {
+      "code": 4760,
+      "label": "ኘ",
+      "popup": {
+        "relevant": [
+          {
+            "code": 4761,
+            "label": "ኙ"
+          },
+          {
+            "code": 4762,
+            "label": "ኚ"
+          },
+          {
+            "code": 4763,
+            "label": "ኛ"
+          },
+          {
+            "code": 4764,
+            "label": "ኜ"
+          },
+          {
+            "code": 4765,
+            "label": "ኝ"
+          },
+          {
+            "code": 4766,
+            "label": "ኞ"
+          },
+          {
+            "code": 4767,
+            "label": "ኟ"
+          }
+        ]
+      }
+    },
+    {
+      "code": 4792,
+      "label": "ኸ",
+      "popup": {
+        "relevant": [
+          {
+            "code": 4793,
+            "label": "ኹ"
+          },
+          {
+            "code": 4794,
+            "label": "ኺ"
+          },
+          {
+            "code": 4795,
+            "label": "ኻ"
+          },
+          {
+            "code": 4796,
+            "label": "ኼ"
+          },
+          {
+            "code": 4797,
+            "label": "ኽ"
+          },
+          {
+            "code": 4798,
+            "label": "ኾ"
+          },
+          {
+            "code": 4800,
+            "label": "ዀ"
+          },
+          {
+            "code": 4802,
+            "label": "ዂ"
+          },
+          {
+            "code": 4803,
+            "label": "ዃ"
+          },
+          {
+            "code": 4804,
+            "label": "ዄ"
+          },
+          {
+            "code": 4805,
+            "label": "ዅ"
+          }
+        ]
+      }
+    },
+    {
+      "code": 4896,
+      "label": "ጠ",
+      "popup": {
+        "relevant": [
+          {
+            "code": 4897,
+            "label": "ጡ"
+          },
+          {
+            "code": 4898,
+            "label": "ጢ"
+          },
+          {
+            "code": 4899,
+            "label": "ጣ"
+          },
+          {
+            "code": 4900,
+            "label": "ጤ"
+          },
+          {
+            "code": 4901,
+            "label": "ጥ"
+          },
+          {
+            "code": 4902,
+            "label": "ጦ"
+          },
+          {
+            "code": 4903,
+            "label": "ጧ"
+          }
+        ]
+      }
+    },
+    {
+      "code": 4904,
+      "label": "ጨ",
+      "popup": {
+        "relevant": [
+          {
+            "code": 4905,
+            "label": "ጩ"
+          },
+          {
+            "code": 4906,
+            "label": "ጪ"
+          },
+          {
+            "code": 4907,
+            "label": "ጫ"
+          },
+          {
+            "code": 4908,
+            "label": "ጬ"
+          },
+          {
+            "code": 4909,
+            "label": "ጭ"
+          },
+          {
+            "code": 4910,
+            "label": "ጮ"
+          },
+          {
+            "code": 4911,
+            "label": "ጯ"
+          }
+        ]
+      }
+    },
+    {
+      "code": 4912,
+      "label": "ጰ",
+      "popup": {
+        "relevant": [
+          {
+            "code": 4913,
+            "label": "ጱ"
+          },
+          {
+            "code": 4914,
+            "label": "ጲ"
+          },
+          {
+            "code": 4915,
+            "label": "ጳ"
+          },
+          {
+            "code": 4916,
+            "label": "ጴ"
+          },
+          {
+            "code": 4917,
+            "label": "ጵ"
+          },
+          {
+            "code": 4918,
+            "label": "ጶ"
+          },
+          {
+            "code": 4919,
+            "label": "ጷ"
+          }
+        ]
+      }
+    },
+    {
+      "code": 4920,
+      "label": "ጸ",
+      "popup": {
+        "relevant": [
+          {
+            "code": 4921,
+            "label": "ጹ"
+          },
+          {
+            "code": 4922,
+            "label": "ጺ"
+          },
+          {
+            "code": 4923,
+            "label": "ጻ"
+          },
+          {
+            "code": 4924,
+            "label": "ጼ"
+          },
+          {
+            "code": 4925,
+            "label": "ጽ"
+          },
+          {
+            "code": 4926,
+            "label": "ጾ"
+          },
+          {
+            "code": 4927,
+            "label": "ጿ"
+          }
+        ]
+      }
+    },
+    {
+      "code": 4928,
+      "label": "ፀ",
+      "popup": {
+        "relevant": [
+          {
+            "code": 4929,
+            "label": "ፁ"
+          },
+          {
+            "code": 4930,
+            "label": "ፂ"
+          },
+          {
+            "code": 4931,
+            "label": "ፃ"
+          },
+          {
+            "code": 4932,
+            "label": "ፄ"
+          },
+          {
+            "code": 4933,
+            "label": "ፅ"
+          },
+          {
+            "code": 4934,
+            "label": "ፆ"
+          },
+          {
+            "code": 4935,
+            "label": "ፇ"
           }
         ]
       }

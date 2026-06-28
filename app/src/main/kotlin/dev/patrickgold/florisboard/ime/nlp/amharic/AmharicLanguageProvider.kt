@@ -22,6 +22,8 @@ import com.ampk.engine.ModelBundle
 import dev.patrickgold.florisboard.appContext
 import dev.patrickgold.florisboard.ime.core.Subtype
 import dev.patrickgold.florisboard.ime.editor.EditorContent
+import dev.patrickgold.florisboard.ime.editor.EditorRange
+import dev.patrickgold.florisboard.ime.nlp.BreakIteratorGroup
 import dev.patrickgold.florisboard.ime.nlp.SuggestionCandidate
 import dev.patrickgold.florisboard.ime.nlp.SuggestionProvider
 import dev.patrickgold.florisboard.ime.nlp.WordSuggestionCandidate
@@ -108,6 +110,24 @@ class AmharicLanguageProvider(context: Context) : SuggestionProvider {
         }
     }
 
+    /**
+     * Determine which part of the text is the "current word" (the composing region) so that
+     * tapping a completion *replaces* the typed prefix instead of appending to it. The default
+     * implementation relies on an ICU word-break for the subtype locale, which does not reliably
+     * detect a fidel word for `am-ET` — so we take the trailing run of Ethiopic characters directly.
+     */
+    override suspend fun determineLocalComposing(
+        subtype: Subtype,
+        textBeforeSelection: CharSequence,
+        breakIterators: BreakIteratorGroup,
+        localLastCommitPosition: Int,
+    ): EditorRange {
+        val end = textBeforeSelection.length
+        var start = end
+        while (start > 0 && isFidel(textBeforeSelection[start - 1])) start--
+        return if (start < end) EditorRange(start, end) else EditorRange.Unspecified
+    }
+
     override suspend fun notifySuggestionAccepted(subtype: Subtype, candidate: SuggestionCandidate) {
         // Let the engine's on-device personalization learn the accepted word (frequency/recency/
         // acceptance). Real prior-word context is wired in a later step alongside autocorrect.
@@ -137,5 +157,14 @@ class AmharicLanguageProvider(context: Context) : SuggestionProvider {
 
     override suspend fun destroy() {
         state.withLock { it.engine = null }
+    }
+
+    /** True for codepoints in the Ethiopic Unicode blocks (the fidel script). */
+    private fun isFidel(c: Char): Boolean {
+        val cp = c.code
+        return cp in 0x1200..0x137F ||   // Ethiopic
+            cp in 0x1380..0x139F ||      // Ethiopic Supplement
+            cp in 0x2D80..0x2DDF ||      // Ethiopic Extended
+            cp in 0xAB00..0xAB2F         // Ethiopic Extended-A
     }
 }
