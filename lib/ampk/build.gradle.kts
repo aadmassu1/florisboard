@@ -33,8 +33,8 @@ tasks.withType<Test> {
 }
 
 dependencies {
-    // The engine itself is pure stdlib. serialization-json is only used by the parity test.
-    testImplementation(libs.kotlinx.serialization.json)
+    // serialization-json parses the bundled model assets (ModelBundle) and the parity fixtures.
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.kotest.assertions.core)
     testImplementation(libs.kotest.runner.junit5)
 }

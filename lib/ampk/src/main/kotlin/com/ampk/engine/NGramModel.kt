@@ -96,4 +96,22 @@ class NGramModel(val alpha: Double = 0.4) {
     fun freqs(): Map<String, Int> = unigram.filterKeys { it != BOS && it != EOS }
 
     fun vocab(): Set<String> = unigram.keys.filter { it != BOS && it != EOS }.toSet()
+
+    companion object {
+        /** Build a model directly from precomputed counts (used by ModelBundle asset loading). */
+        fun fromCounts(
+            alpha: Double,
+            total: Int,
+            unigram: Map<String, Int>,
+            bigram: Map<String, Map<String, Int>>,
+            trigram: Map<Pair<String, String>, Map<String, Int>>,
+        ): NGramModel {
+            val model = NGramModel(alpha)
+            model.total = total
+            model.unigram.putAll(unigram)
+            for ((w1, inner) in bigram) model.bigram[w1] = LinkedHashMap(inner)
+            for ((key, inner) in trigram) model.trigram[key] = LinkedHashMap(inner)
+            return model
+        }
+    }
 }
