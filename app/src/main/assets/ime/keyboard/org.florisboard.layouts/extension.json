@@ -11,6 +11,12 @@
   "layouts": {
     "characters": [
       {
+        "id": "amharic",
+        "label": "Amharic (Phonetic)",
+        "authors": [ "am-predictive-kb" ],
+        "direction": "ltr"
+      },
+      {
         "id": "arabic",
         "label": "Arabic",
         "authors": [ "HeiWiper" ],

@@ -84,6 +84,18 @@
   ],
   "subtypePresets": [
     {
+      "languageTag": "am-ET",
+      "composer": "org.florisboard.composers:appender",
+      "currencySet": "org.florisboard.currencysets:dollar",
+      "popupMapping": "org.florisboard.localization:default",
+      "preferred": {
+        "characters": "org.florisboard.layouts:amharic"
+      },
+      "nlpProviders": {
+        "suggestion": "com.ampk.nlp.providers.amharic"
+      }
+    },
+    {
       "languageTag": "en-US",
       "composer": "org.florisboard.composers:appender",
       "currencySet": "org.florisboard.currencysets:dollar",
