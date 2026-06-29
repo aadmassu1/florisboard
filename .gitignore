@@ -50,6 +50,12 @@ captures/
 *.jks
 crowdin.properties
 
+# Generated Amharic model bundle (large; regenerate with
+# am-predictive-kb: py -3.12 scripts/build_amharic_model.py)
+/app/src/main/assets/ime/ampk/ngram.json
+/app/src/main/assets/ime/ampk/dictionary.json
+/app/src/main/assets/ime/ampk/manifest.json
+
 # C++
 .cxx/
 
