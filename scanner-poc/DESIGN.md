@@ -377,10 +377,12 @@ eval harness). Phases 2 and 3 can overlap once the document-record schema is fro
 The original discussion started from FlorisBoard (this repo). This track is independent of
 the scanner phases above and can be built by a separate builder at any time.
 
-### 6.1 What was rejected, and why (do not revisit without new evidence)
+### 6.1 The English-pivot prediction idea: known structural risks
 
 Translation-pivot *suggestions* — translating typed Amharic context to English, predicting
-the next English word, translating it back — are structurally wrong for a keyboard:
+the next English word, translating it back — face four structural problems in a keyboard.
+They are documented here because any builder attempting Phase K2 (§6.4) must design its
+evaluation around them:
 
 - **Word-order misalignment:** Amharic is SOV, English is SVO; the "next English word"
   continues a differently-ordered sentence, so it frequently isn't the next Amharic word.
@@ -392,7 +394,9 @@ the next English word, translating it back — are structurally wrong for a keyb
 - **Cost:** two on-device MT directions + an English LM, in an offline-only app with a
   per-keystroke latency budget, to fill one low-precision suggestion slot.
 
-The native path below is cheaper and correct by construction.
+The native path (K0/K1) is cheaper and correct by construction, so it comes first. The
+pivot idea is not discarded: it is staged as a measured experiment in K2, *after* K1
+exists as the baseline it must beat.
 
 ### 6.2 Keyboard Phase K0 — Transliteration composer ("type Amharic in English")
 
@@ -484,7 +488,53 @@ us), the assembly is:
 Do not start K1 before K0 ships: K0 is useful alone, K1 without K0 is not, and K1's
 reverse-transliteration table is generated *from* K0's rule table.
 
-### 6.4 Relationship to the scanner project
+### 6.4 Keyboard Phase K2 — English-pivot prediction experiment (gated on K1)
+
+**Goal.** Test the hypothesis that English-domain semantics can add prediction value that
+Amharic n-gram statistics miss. The pivot: after the user commits a word (space), translate
+the Amharic sentence-so-far to English, predict the next English word with an English
+language model, map it back to Amharic candidates, and offer the best one as **one extra
+slot** in the suggestion row — never replacing the K1 n-gram candidates, never
+auto-committing.
+
+**Why it is gated, not scheduled.** The structural risks in §6.1 mean this may add nothing;
+the K1 baseline is what makes that measurable instead of arguable. The experiment exists
+because the semantic upside is real: n-grams have zero semantics, and an English LM could
+occasionally surface a contextually apt word a sparse Amharic n-gram cannot. K2's job is to
+find out whether "occasionally" is often enough to pay for its machinery.
+
+**Assembly.**
+1. *Trigger:* on word commit (space/punctuation) only — never per keystroke. Runs async;
+   if the result arrives after the user types again, it is discarded (stale context).
+2. *Am→En leg:* the same MT backend family as the scanner (Marian/NLLB via CTranslate2
+   int8); shared model files if both apps are installed is a non-goal for v1.
+3. *English prediction:* a small on-device English LM or n-gram model over the translated
+   prefix. Skip function-word predictions outright (*the, to, of, a, not…* — §6.1's
+   morpheme problem) via a stoplist; only content-word predictions proceed.
+4. *En→Am mapping — NOT free-text back-translation:* map the predicted English lemma to
+   Amharic candidates through a **bilingual lexicon** (English lemma → Amharic lemma set),
+   then choose the surface form by asking the **K1 n-gram model** which inflected form of
+   that lemma is most likely after the current Amharic context. This sidesteps §6.1's
+   inflection-loss problem: English supplies the *lemma* (semantics), Amharic statistics
+   supply the *form* (morphology). If the lexicon has no entry or the n-gram has no form
+   preference, show nothing — silence beats noise in a suggestion row.
+5. *Placement:* candidate appears in the last suggestion slot, visually identical to other
+   suggestions. Log (locally, opt-in) impressions and taps for both K1 and K2 candidates.
+
+**Evaluation — the experiment's entire point.**
+- Offline first: on a held-out Amharic corpus, measure next-word hit@1/hit@3 for K1 alone
+  vs. K1+K2. If K2 does not improve hit@3 by a pre-registered margin (suggest ≥2 points),
+  stop — do not ship.
+- On-device second: pivot-candidate tap-through rate vs. the n-gram candidates in the same
+  slot position, plus added latency and battery cost per commit.
+- Kill criteria are as important as ship criteria: K2 is removed if it degrades suggestion
+  latency past 150 ms per commit or its tap-through is below half the n-gram candidates'.
+
+**Dependencies.** K1 shipped (supplies the candidate baseline, the n-gram form-picker, and
+the tap-through instrumentation); a bilingual En–Am lexicon (buildable from public
+dictionaries or extracted from parallel corpora — document provenance and license).
+
+### 6.5 Relationship to the scanner project
 
 Scanner Phase 1 (Amharic corpus, wordlist, n-gram counts) and Keyboard Phase K1 consume
 the same data assets. Whichever track is built first should place these under a shared,
