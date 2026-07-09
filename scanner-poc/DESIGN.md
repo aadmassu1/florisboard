@@ -37,6 +37,15 @@ always preserved and shown alongside; English is the *processing* domain, not th
    (e.g., Tesseract → a trained handwriting model) without touching the others.
 4. **Measure everything.** Every phase has numeric exit criteria. No stage is "done" on
    vibes; it's done when the metric says so on the shared evaluation set.
+5. **Alignment by construction, never by aligner.** Word-level Amharic↔English alignment
+   is unreliable for this pair (Amharic packs multiple English words into one token —
+   አልሄድኩም ↔ "I did not go" — and SOV↔SVO reordering breaks positional heuristics; NMT
+   models emit no alignments, and external aligners are research-grade here). Therefore:
+   MT is always run **per sentence/per line, recording which source segment produced
+   which output segment** — that mapping is exact by construction and is stored in the
+   document record (`translation.segments: [{am_range, en_range}]`). No feature may
+   depend on alignment finer than these segments. Anything needing a word-level bridge
+   uses a bilingual lexicon (as K2 does), not an alignment model.
 
 ---
 
@@ -82,7 +91,8 @@ because every stage reads/writes it:
   },
   "translation": {
     "engine": "nllb-200-distilled-600M",
-    "text": "…english…"
+    "text": "…english…",
+    "segments": [{"am_range": [0, 42], "en_range": [0, 38]}]
   },
   "understanding": {
     "doc_type": "receipt",
@@ -285,8 +295,10 @@ registered per doc type. Two rules keep it honest:
 
 Receipt extractor: merchant (top-of-page lines + largest-font heuristic from OCR bboxes),
 date, line items (rows where a right-aligned number follows text), total (keyword match on
-English side — "total/sum" — then the *amount* taken from the Amharic side at the same
-line position). General extractor: spaCy NER (people, orgs, dates, money) over the English
+English side — "total/sum" — then the *amount* taken from the Amharic side of the **same
+MT segment**). This works only because of design principle 5: receipts are translated
+line-by-line, so the English line that says "total" maps exactly to the Amharic line that
+carries the amount — no word aligner involved. General extractor: spaCy NER (people, orgs, dates, money) over the English
 text — commodity, which is exactly why the pivot exists.
 
 **Operation.** Runs automatically inside `scan`; fields land in the document record's
@@ -428,9 +440,9 @@ audiences: low-vision users, and eyes-busy situations (document in one hand, lis
 
 **Assembly.** Android's platform `TextToSpeech` engine over the document record's English
 text — no new models. Sentence-by-sentence playback with the matching region of the
-*original image* highlighted as it reads (sentence offsets in the English text are mapped
-back through the MT stage's sentence alignment, which the record must therefore store —
-flag this in the Phase 3 record-schema port). If an Amharic TTS voice is installed on the
+*original image* highlighted as it reads: the English sentence maps to its Amharic source
+segment via `translation.segments` (design principle 5), and that segment's OCR bboxes
+give the image region. Segment granularity is exactly why this works — no word aligner. If an Amharic TTS voice is installed on the
 device, offer it as a choice; never require it.
 
 **Operation.** Speaker icon on any document view → plays; tap a paragraph to start from
