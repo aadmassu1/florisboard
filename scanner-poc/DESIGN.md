@@ -226,45 +226,174 @@ wordlist. This is the institutional knowledge the handwriting phase (4) will reu
 Amharic OCR app does. Everything in this phase operates on the English translation and is
 therefore ordinary, well-trodden engineering; that's the point of the pivot.
 
-**Deliverables.**
-- `stages/extract.py` grown into per-document-type extractors:
-  - **Receipts:** merchant, date (incl. Ethiopian-calendar → Gregorian conversion),
-    line items, total. Output: CSV/JSON export.
-  - **Letters/general:** people, organizations, dates, amounts (spaCy NER on the English
-    text — commodity, which is exactly why we pivoted).
-  - Doc-type classifier: rules first (receipts have totals and ETB amounts; letters have
-    salutations), ML only if rules prove insufficient.
-- `index.py` — local full-text search over all document records using SQLite FTS5:
-  both the English *and* Amharic text are indexed, so queries work in either language and
-  results always show the original document.
-- `summarize.py` — **opt-in** LLM backend (Claude API) for summarization and Q&A over a
-  document's English text. Clearly separated: this is the only module that can send data
-  off-device, it is off by default, and the pipeline is fully functional without it.
-- `pipeline.py` grows subcommands: `scan`, `search`, `export`, `ask`.
+Phase 2 is organized as one capability per section (2.1–2.7), each with the full
+role/assembly/operation/exit-criteria treatment. Build order is the section order:
+each capability builds on the ones before it. Two more capabilities that depend on a
+phone (read-aloud, document actions) are specified the same way inside Phase 3
+(§3.1, §3.2), and handwritten notes join the index in Phase 4 with no changes here.
 
-**Assembly.** Each extractor is a function `(english_text, ocr_words) → fields` registered
-per doc type; the classifier picks which ones run. The search index is a single SQLite file
-next to the document records — no server, portable, trivially backed up. The LLM module
-reads the same document record JSON; nothing upstream knows it exists.
+Shared infrastructure for all of Phase 2: `pipeline.py` grows subcommands
+(`scan`, `search`, `export`, `ask`, `pdf`), and every capability reads/writes the
+document record — none of them talk to each other directly.
+
+#### 2.1 Cross-lingual search
+
+**Role.** The headline feature: search a folder of scanned Amharic documents in English —
+"rent contract 2024" finds a contract that never contained a word of English. Also the
+foundation the library UI (Phase 3) sits on. Amharic queries must work equally, because
+the original text is the source of truth.
+
+**Assembly.** SQLite FTS5, one database file next to the document records — no server,
+portable, trivially backed up. One row per document with two indexed columns
+(`text_am`, `text_en`) plus stored metadata (id, doc_type, date). A query runs against
+both columns; ranking is BM25 (FTS5 built-in) with a small boost for matches in extracted
+fields (a hit on a receipt's merchant name outranks a hit in body text). The indexer is
+idempotent: `scan` upserts by document id, so re-processing a document (e.g., after an
+improved OCR model) refreshes the index without duplicates. Amharic tokenization note for
+the builder: FTS5's default unicode61 tokenizer splits Ethiopic on the word-space
+character (፡) and whitespace correctly, but test with and without Ethiopic punctuation —
+if real documents mix ASCII spaces and ፡, normalize spacing at index time.
 
 **Operation.**
 ```bash
-python pipeline.py scan ~/scans/*.jpg          # process + index
-python pipeline.py search "rent contract 2024" # English query over Amharic docs
-python pipeline.py search "ደረሰኝ"               # Amharic query works too
-python pipeline.py export --type receipt --csv receipts.csv
-python pipeline.py ask 2026-07-09-0001 "what is this letter asking me to do?"  # opt-in LLM
+python pipeline.py scan ~/scans/*.jpg           # process + upsert into index
+python pipeline.py search "rent contract 2024"  # English query
+python pipeline.py search "ደረሰኝ"                # Amharic query
+python pipeline.py search --type receipt "meat" # filtered by doc type
+```
+Results print: document id, matched snippet (in whichever language matched), source image
+path.
+
+**Exit criteria.** Relevant document in top 3 for 10 predefined English queries and 5
+Amharic queries against a 50-document corpus; index rebuild from records ≤ 10 s.
+
+#### 2.2 Structured extraction
+
+**Role.** Turns a photo of paper into data you can act on — the capability no existing
+Amharic OCR app has. Receipts are the flagship type (highest value, most regular
+structure); a general extractor covers everything else.
+
+**Assembly.** Each extractor is a function `(english_text, amharic_text, ocr_words) → fields`
+registered per doc type. Two rules keep it honest:
+- **Numerics come from the source side.** Dates, amounts, and phone numbers are read from
+  the Amharic/numeric text via patterns, not from the translation — MT can reorder or
+  reformat numbers, and a wrong total is worse than no total. The English text is used for
+  *semantics*: which number is the total, which line is the merchant.
+- **Ethiopian calendar is first-class.** A deterministic Ethiopian↔Gregorian converter
+  (13-month calendar, ~7–8 year offset, own leap rule) ships as a utility; every extracted
+  date is stored in both calendars plus a flag for which was printed.
+
+Receipt extractor: merchant (top-of-page lines + largest-font heuristic from OCR bboxes),
+date, line items (rows where a right-aligned number follows text), total (keyword match on
+English side — "total/sum" — then the *amount* taken from the Amharic side at the same
+line position). General extractor: spaCy NER (people, orgs, dates, money) over the English
+text — commodity, which is exactly why the pivot exists.
+
+**Operation.** Runs automatically inside `scan`; fields land in the document record's
+`understanding.fields` and are searchable (§2.1) and exportable (§2.5).
+`python pipeline.py show <id> --fields` prints extraction for one document;
+`--debug-extract` shows which side (Amharic/English) supplied each field.
+
+**Exit criteria.** Date + total correct on ≥ 80% of printed receipts in the eval set;
+calendar converter passes a golden test of 20 known date pairs; zero fields silently
+guessed — every field carries a confidence and extractors emit nothing rather than
+low-confidence junk.
+
+#### 2.3 Auto-organization (document-type classification)
+
+**Role.** Scans sort themselves — receipts, letters, IDs, forms, other — so the library
+stays usable at hundreds of documents, and so extraction (§2.2) knows which extractor to
+run. Sits *before* extraction in the flow.
+
+**Assembly.** Rules first, ML only if rules prove insufficient on the eval set: receipts
+have ETB amounts + a total line; letters have salutation/closing patterns (both sides
+checked — ውድ… on the Amharic side, "Dear…" on the English side); IDs are card-aspect-ratio
+images with short text and many proper nouns; forms have high ratio of short labeled
+fields. Classifier output = type + confidence; below threshold → `other` (never a wrong
+confident bucket). The document record stores type + confidence so misclassifications are
+findable and re-runnable later.
+
+**Operation.** Automatic inside `scan`; `python pipeline.py scan --type receipt …`
+overrides per batch; `search --type` filters (§2.1). Reclassify-all:
+`python pipeline.py reclassify` (cheap — no OCR/MT re-run, reads existing records).
+
+**Exit criteria.** ≥ 90% precision on `receipt` (extraction depends on it), ≥ 75% accuracy
+overall on the labeled eval set; every misclassification lands in `other`, not in a wrong
+type.
+
+#### 2.4 Summarization & Q&A (opt-in LLM)
+
+**Role.** "What is this letter asking me to do?" — free-form understanding that rules
+can't cover. Also the accessibility path for a user who reads no Amharic at all. Kept
+opt-in because it is the only capability that can send data off-device.
+
+**Assembly.** `summarize.py` reads a document record, sends the *English* text (never the
+image, never the Amharic original — smaller payload, no script-handling risk) to the
+Claude API, returns summary or answer. Hard separation: off by default, enabled by
+explicit config with a visible warning, no other module imports it, and the pipeline is
+fully functional without it. Prompt templates live in the repo (versioned, reviewable).
+When a capable on-device LLM becomes practical, it slots in behind the same interface —
+the opt-in then becomes a backend choice.
+
+**Operation.**
+```bash
+python pipeline.py ask <id> "what is this letter asking me to do?"
+python pipeline.py summarize <id>
+python pipeline.py summarize <id> --batch --type letter   # all letters, one line each
 ```
 
-**Exit criteria.**
-- Receipt extraction: date + total correct on ≥ 80% of printed receipts in the eval set.
-- Search: relevant document in top 3 results for 10 predefined English queries against a
-  50-document corpus.
-- A user who reads no Amharic can determine what a scanned document is about using only
-  this tool (the demo that sells the project).
+**Exit criteria.** On 10 eval letters, summaries judged correct/useful by the project
+owner for ≥ 8; refusal path verified (clear error when not opted in); documented privacy
+note in README stating exactly what leaves the device and when.
+
+#### 2.5 CSV / spreadsheet export
+
+**Role.** The extracted data has to land where people actually use it — a spreadsheet.
+"All receipts for June as a table" is the single most demoable output of the project.
+
+**Assembly.** Thin and boring by design: a query over document records (reusing §2.1's
+filters) → flat table → CSV (UTF-8 with BOM, so Excel renders fidel correctly — test
+this, it is the classic failure). Columns per doc type defined next to each extractor so
+they can't drift apart. Dates export in both calendars (two columns).
+
+**Operation.** `python pipeline.py export --type receipt --from 2026-06-01 --to 2026-06-30 --csv june.csv`
+
+**Exit criteria.** Exported CSV opens correctly (fidel intact, columns aligned) in Excel,
+Google Sheets, and LibreOffice; row count matches `search --type receipt` for the same
+filter.
+
+#### 2.6 Searchable PDF export (stretch)
+
+**Role.** Makes the scan itself a first-class document: a PDF with the original image and
+an invisible text layer, so any PDF reader can select/copy fidel text and OS-level search
+indexes it. Valuable beyond this tool — it upgrades the user's archive in place.
+
+**Assembly.** The document record already stores per-word bounding boxes from OCR
+(Phase 0 deliverable); a PDF writer (e.g., `pikepdf`/`reportlab`) places each corrected
+Amharic word invisibly at its bbox over the page image. English translation goes on an
+appended text page (visible), not overlaid. Requires an embedded Ethiopic font subset —
+document the font license.
+
+**Operation.** `python pipeline.py pdf <id> --out doc.pdf` (or `--all --type letter`).
+
+**Exit criteria.** Text selection in two mainstream PDF readers selects the visually
+corresponding fidel; file size ≤ 2× the source image.
+
+#### 2.7 Digitized Amharic text (already free)
+
+**Role.** Stated so it isn't overlooked: after Phase 1, corrected Amharic plain text is
+available with no further work — copy-paste, editing, archiving. This is the entire
+product of the existing commercial Amharic OCR apps, and here it is a by-product.
+`python pipeline.py show <id> --text` prints it; no further build needed.
+
+**Phase 2 exit criteria (overall).** Each capability's own criteria met, plus the
+integration demo: a user who reads no Amharic scans 10 mixed documents, finds a specific
+one by English search, exports the receipts among them to CSV, and (opted-in) gets a
+correct summary of one letter — using nothing but this tool.
 
 **Documentation.** `docs/formats.md` freezing the document-record schema and index layout;
-README gains a worked end-to-end example with real (redacted) documents.
+README gains a worked end-to-end example with real (redacted) documents; each capability
+section above gets a short usage entry in the README as it lands.
 
 ---
 
@@ -290,9 +419,53 @@ Amharic original with English alongside.
 4. *Index/records:* same SQLite FTS5 schema as Phase 2 — the document record JSON is the
    portability contract between desktop and mobile.
 
-**Operation.** Install app → point at document → auto-crop → processed record appears in
-the library → search/export from the library screen. Settings: MT backend choice, opt-in
-cloud features (off by default), storage location.
+#### 3.1 Read-aloud (accessibility)
+
+**Role.** The phone reads a scanned document out loud in English. English TTS is a
+commodity (bundled in Android); Amharic TTS is scarce and poor — one more place the
+English pivot converts a missing Amharic capability into a solved English one. Primary
+audiences: low-vision users, and eyes-busy situations (document in one hand, listening).
+
+**Assembly.** Android's platform `TextToSpeech` engine over the document record's English
+text — no new models. Sentence-by-sentence playback with the matching region of the
+*original image* highlighted as it reads (sentence offsets in the English text are mapped
+back through the MT stage's sentence alignment, which the record must therefore store —
+flag this in the Phase 3 record-schema port). If an Amharic TTS voice is installed on the
+device, offer it as a choice; never require it.
+
+**Operation.** Speaker icon on any document view → plays; tap a paragraph to start from
+there; standard media controls (pause, speed).
+
+**Exit criteria.** Playback works offline with the stock Google TTS voice; sentence
+highlighting stays in sync on the 10-document eval set; TalkBack (Android screen reader)
+can drive the whole flow.
+
+#### 3.2 Document-driven actions
+
+**Role.** Close the loop from *understanding* a document to *acting* on it: a bill's due
+date becomes a calendar reminder, a letterhead phone number becomes a contact, an address
+opens in maps. This is where extraction (§2.2) stops being a data table and starts saving
+the user real steps.
+
+**Assembly.** Pure Android intents over already-extracted fields — no new extraction
+work: `Intent.ACTION_INSERT` for calendar events (both-calendar dates from §2.2 make the
+Gregorian value trivially available) and contacts, `tel:`/`geo:` URIs for dial and maps.
+Each action is a chip on the document screen, generated by a small
+`field type → intent` registry. Actions are always user-tapped, never automatic — the
+extractor's confidence is shown on the chip, and a wrong suggestion costs one glance, not
+a wrong calendar entry.
+
+**Operation.** Open a scanned utility bill → chips appear: "Due 12 Jul — add reminder",
+"Call 011-…", "Open address in Maps" → tap → the target app opens pre-filled; nothing is
+saved without the user confirming inside the target app.
+
+**Exit criteria.** For the eval receipts/bills with extracted dates and phone numbers,
+≥ 90% of generated chips open the correct pre-filled intent; zero automatic writes to
+calendar/contacts (verified by test).
+
+**Operation (app overall).** Install app → point at document → auto-crop → processed
+record appears in the library → search/export/read-aloud/actions from the library screen.
+Settings: MT backend choice, opt-in cloud features (off by default), storage location.
 
 **Exit criteria.**
 - Photo-to-English ≤ 15 s on a mid-range phone (Snapdragon 6-series class).
