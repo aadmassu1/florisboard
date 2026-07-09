@@ -372,12 +372,120 @@ eval harness). Phases 2 and 3 can overlap once the document-record schema is fro
 4. **Model size on mobile** — 600 MB MT model. Mitigated by int8 quantization, first-run
    download, and the small Marian default.
 
-## 6. Parked: the Keyboard Idea
+## 6. Keyboard Track: Amharic Transliteration Input (FlorisBoard)
 
-The original discussion started from FlorisBoard (this repo). Conclusions, kept for later:
-translation-pivot suggestions are structurally wrong for a keyboard (SOV/SVO word-order
-misalignment at prediction time, morpheme-vs-word mismatch, single-word back-translation
-can't pick inflections, per-keystroke latency). The viable keyboard path is native:
-Ethiopic layout + Amharic wordlist/n-gram suggestion provider — and the Amharic corpus,
-wordlist, and n-gram assets built in **Phase 1 are exactly the assets that keyboard work
-would need**, so the two projects share a foundation if the keyboard is revisited.
+The original discussion started from FlorisBoard (this repo). This track is independent of
+the scanner phases above and can be built by a separate builder at any time.
+
+### 6.1 What was rejected, and why (do not revisit without new evidence)
+
+Translation-pivot *suggestions* — translating typed Amharic context to English, predicting
+the next English word, translating it back — are structurally wrong for a keyboard:
+
+- **Word-order misalignment:** Amharic is SOV, English is SVO; the "next English word"
+  continues a differently-ordered sentence, so it frequently isn't the next Amharic word.
+- **Morpheme-vs-word mismatch:** the most common English predictions (*the, to, of, not*)
+  surface in Amharic as affixes on other words — there is no standalone token to suggest.
+- **Inflection loss:** single-word English→Amharic back-translation can't pick agreement
+  (predicted "goes" ↛ ይሄዳል vs. ትሄዳለች), so even semantically right suggestions arrive in
+  a form the user won't tap.
+- **Cost:** two on-device MT directions + an English LM, in an offline-only app with a
+  per-keystroke latency budget, to fill one low-precision suggestion slot.
+
+The native path below is cheaper and correct by construction.
+
+### 6.2 Keyboard Phase K0 — Transliteration composer ("type Amharic in English")
+
+**Goal.** Let users type romanized Amharic on a QWERTY layout and get fidel directly:
+`selam` → ሰላም. This is the mainstream way Amharic is typed (Gboard's Amharic mode and
+Google Input Tools work exactly this way, as did Power Ge'ez conventions before them), so
+users already know the scheme. Gboard's version is closed and cloud-connected; this is the
+open, offline equivalent — and it is the **cheapest real Amharic feature this codebase can
+ship**, because the mechanism already exists.
+
+**Key discovery (verified in this repo).** FlorisBoard has a generic rules-based composer:
+`WithRules` in `app/src/main/kotlin/dev/patrickgold/florisboard/ime/text/composing/Composer.kt`.
+It rewrites the tail of committed text from a plain JSON map of rules and is already used
+in production for Vietnamese Telex
+(`app/src/main/assets/ime/keyboard/org.florisboard.composers/extension.json`, composer id
+`telex`). **An Amharic transliteration mode is therefore a data file, not new Kotlin code.**
+
+**How the rule mechanism works (builder must understand this before writing rules).**
+`WithRules.getActions(precedingText, toInsert)` sees the text *already committed* to the
+editor plus the incoming character, matches the longest rule key against the tail, and
+returns (chars-to-delete, replacement). Consequence: rules are keyed on **already-transformed
+output**, not on the raw keystroke sequence. The fidel table is written like this:
+
+```
+"s"   → "ስ"     (bare consonant commits the 6th-order/sadis form immediately)
+"ስe"  → "ሰ"     (typing e after committed ስ replaces it with the 1st-order form)
+"ስu"  → "ሱ"     "ስi" → "ሲ"    "ስa" → "ሳ"    "ስE" → "ሴ"    "ስo" → "ሶ"
+"ሰe"  → "ሴ"     (double-e convention for the 5th order, if adopted)
+"ስw"  → "ሷ"     (labialized forms follow the same replace pattern)
+```
+
+This is exactly the pattern the Telex rules already use (their keys contain transformed
+characters like `"ăf": "ằ"`), so the mechanism is proven in this codebase.
+
+**Deliverables.**
+1. `generate_ethiopic_rules.py` (or Kotlin script) — generates the full rules map from the
+   Unicode Ethiopic block structure. Do not hand-write ~350+ rules: fidel is systematic
+   (base consonant + 7 vowel orders at fixed codepoint offsets, plus labialized series),
+   so the table is generated from a consonant→romanization list (~34 entries) and a
+   vowel-order→suffix list (7 entries). Handwritten exceptions only where romanization
+   conventions collide (e.g. `h` families ሀ/ሐ/ኀ, `s` ሰ/ሠ, `ts` ጸ/ፀ — pick one primary per
+   sound; the alternates get digraph escapes like `hh`, `ss2`, or long-press keys).
+2. A new composer entry `{ "$": "with-rules", "id": "ethiopic-translit", … }` in a keyboard
+   extension (either added to `org.florisboard.composers` or a separate
+   `org.florisboard.composers.ethiopic` extension).
+3. A characters layout JSON (QWERTY key arrangement, Ethiopic long-press popups for the
+   ambiguous consonant alternates) + subtype preset wiring `am` locale → this layout +
+   composer, following how existing layouts/presets are registered in
+   `app/src/main/assets/ime/keyboard/org.florisboard.layouts/`.
+4. A rules test: feed romanization strings through `WithRules.getActions` in a unit test
+   and assert the fidel output for a golden list of ~50 words (ሰላም, እንጀራ, አዲስ አበባ…).
+
+**Decisions the builder must make (document them in the extension README):**
+- Romanization scheme: follow Gboard/Google Input Tools conventions where possible
+  (users' muscle memory), SERA as the tie-breaker reference.
+- 5th-order (ሴ) and 7th-order (ሶ) suffixes, glottal/pharyngeal consonant escapes, and how
+  to type a *bare Latin word* mid-text (an escape key or the language-switch key — decide
+  and document).
+- Uppercase behavior: `WithRules` lowercases for matching and re-uppercases output — for
+  Ethiopic (no case) verify this path is a no-op; add `E`-style distinct-case rule keys
+  only if the scheme uses them deliberately.
+
+**Operation.** User selects the Amharic (transliteration) subtype; types `selam betam
+des yilal`; sees ሰላም በጣም ደስ ይላል committed as they type; long-presses for rare glyph
+alternates; hits the language switch to type raw English.
+
+**Exit criteria.** The 50-word golden test passes; an Amharic-speaking tester types 5
+everyday sentences without consulting documentation; no regression to the Telex composer
+(shared code path — run its existing behavior before/after).
+
+### 6.3 Keyboard Phase K1 — Dictionary-assisted variants (later, needs suggestion engine)
+
+The composer is deterministic: it requires *one* canonical romanization. Gboard's added
+value is variant tolerance — `injera`, `enjera`, `ingera` all surface እንጀራ **as a
+suggestion candidate**. That requires the suggestion pipeline, and FlorisBoard's
+`SuggestionProvider` for Latin is currently a stub (`suggest()` returns `emptyList()` in
+`ime/nlp/latin/LatinLanguageProvider.kt`). When suggestions are rebuilt upstream (or by
+us), the assembly is:
+
+1. Amharic wordlist with frequencies — **the same asset Scanner Phase 1 builds** (corpus →
+   `wordlist_am.txt`); the two tracks share this foundation.
+2. Reverse-transliterate each dictionary word to its romanization set (run the K0 rule
+   table backwards + known variant patterns: e→i alternations, doubled consonants,
+   epenthetic vowels).
+3. A provider that matches the user's raw Latin composing text against the romanization
+   index and offers fidel words ranked by frequency — same architectural slot as the
+   existing `HanShapeBasedLanguageProvider` (pinyin-style: type Latin, suggest script).
+
+Do not start K1 before K0 ships: K0 is useful alone, K1 without K0 is not, and K1's
+reverse-transliteration table is generated *from* K0's rule table.
+
+### 6.4 Relationship to the scanner project
+
+Scanner Phase 1 (Amharic corpus, wordlist, n-gram counts) and Keyboard Phase K1 consume
+the same data assets. Whichever track is built first should place these under a shared,
+documented format so the other track can reuse them unchanged.
