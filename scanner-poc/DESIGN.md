@@ -801,3 +801,99 @@ Pro combines pages into documents."*
   the free tier *is* the Ethiopian offering — see principle 1.
 - Cloud credits require a payment processor + metering service regardless of store;
   scope it with the §2.4 opt-in work, since that's the first paid cloud surface.
+
+---
+
+## 8. Maintenance & Operational Effort
+
+This section estimates the ongoing cost to keep the system working after all phases ship.
+A solo maintainer is assumed; team economics scale differently but the categories remain.
+
+### 8.1 What requires no maintenance (frozen once shipped)
+
+- **ML models.** OCR (Tesseract), MT (NLLB / Marian via CTranslate2), English LM, and
+  n-gram models are fixed binaries trained once. They have no drift, no retraining loop,
+  and no monitoring. They live in assets or downloaded on first run and are treated as
+  version-pinned dependencies, same as any library.
+- **Deterministic glue.** Image preprocessing (OpenCV), document-record schema, segmentation,
+  index schema (SQLite FTS5), and extraction rules are version-controlled code. They have
+  bugs, but "drift" doesn't apply. A fix is a commit; a rule refinement is a data-file edit.
+- **Free/Pro infrastructure.** Client-side enforcement (Pro entitlements as a flag) and
+  offline processing (no servers) mean zero ops burden for the Free and Pro tiers — no
+  uptime SLAs, no capacity planning, no telemetry infrastructure beyond opt-in local logging.
+
+### 8.2 Recurring maintenance (plan for)
+
+**Android platform churn: ~1–2 weeks/year (usually once, rarely twice).**
+- New Android OS releases introduce deprecations (deprecated APIs, new permissions, scoped
+  storage tightening) every ~6 months. The app's Play Store presence creates a soft
+  deadline: remain compilable and targetable on the latest API level to avoid store
+  de-listing.
+- Mitigation: pin dependencies (CameraX, Tesseract4Android, ONNX Runtime, etc.) to LTS
+  or stable releases; schedule a 1-week platform-churn sprint once the Android version
+  is released (usually Q4, sometimes mid-year). Expected work: recompile, fix type
+  errors, test on one mid-range device.
+- If FlorisBoard is a fork (keyboard track): rebase the branch on FlorisBoard's latest
+  release. Cost is similar but happens roughly 2–3 times/year (FlorisBoard's release
+  cadence); upstreaming the composer data file and rules generator script *reduces* this
+  to a simple merge of one dependency update in FlorisBoard's main repo.
+
+**Extraction rule tweaks: ~few days/quarter.**
+- Receipt/form extraction rules are heuristic (font size, layout patterns, keyword
+  matching). New document types or edge cases (e.g., a regional bank changes receipt
+  format) expose gaps. The Amharic-side n-gram corrector similarly accumulates new
+  confusion pairs observed in production.
+- Work: add a new rule, test on the eval set (or a new sample), commit, ship in the next
+  app release.
+- Mitigated by keeping rules in data files (§2.2, §3.2, Phase 1 corrector) so updates
+  don't require code changes. Updates can ship as asset-only patches.
+
+**Cloud-tier operations (if enabled): ~weekly monitoring, a few days/quarter for issues.**
+- If Cloud credits (§2.4, §7.2) are enabled, the metering service and payment processor
+  require uptime monitoring, quota management, and refund/dispute handling. This is the
+  only tier with a marginal cost per use and real user expectations.
+- This burden exists *only if cloud tiers are shipped.* Free and Pro operate with zero
+  server touch.
+
+### 8.3 Steady-state solo maintainer load
+
+**Average: 1–2 days/month, spiking annually.**
+
+- **Routine:** issue triage (1–2 hrs/week), dependency updates (monthly, batched into one
+  PR), answer user questions or clarifications in issue threads (1–2 hrs/week).
+- **Annually:** platform churn sprint (1 week, non-negotiable); minor feature requests or
+  rule fixes (scattered throughout the year, amortizes to a few days/month).
+- **Never:** retraining, performance tuning, architectural redesigns, or model versioning
+  (because models are frozen). The system either works or it doesn't; the bar is meeting
+  the exit criteria from Phases 0–2, then holding that line.
+
+### 8.4 Why this is low-cost
+
+1. **No online services for Free/Pro.** No logging pipelines, no CDN, no inference servers,
+   no databases to manage. The app runs offline; it syncs records as files. Backup and
+   sync are opt-in cloud features (Phase 3's Cloud credits), so they are budgeted separately.
+2. **Models are frozen binaries, not research.** No need to monitor model performance
+   drift, retrain on new data, or A/B test variants. A 10% drop in OCR accuracy is not a
+   maintenance issue — it is a "go back and train a better recognizer" research project,
+   which is not part of the steady-state maintenance plan.
+3. **Extraction and correction are rules, not ML.** Tweaking a receipt-merchant heuristic
+   is a one-line change. Training a new handwriting recognizer (Phase 4) is not maintenance,
+   it is a research phase. The two are kept separate.
+4. **The schema is frozen from Phase 0.** Every downstream tool reads and writes
+   `document record` JSON with a known structure. Changes to that contract are breaking
+   changes and flow through all stages transparently. There is no "database migration"
+   problem because there is no database server — only versioned JSON files.
+
+### 8.5 Scaling and team dynamics
+
+- **With a team:** assign platform churn to a mobile engineer (reusable sprint template),
+  extraction rules to a domain expert or contractor (low barrier to entry), and cloud ops
+  to a backend engineer. Parallelization cuts 1–2 days/month to ~1 person-week/month
+  across the team.
+- **Handing off:** the system is designed to be handed off. Phases freeze scope and exit
+  criteria; documentation (§3 exit documentation, `PORTING.md` in Phase 3) makes each
+  hand-off explicit. No oral knowledge required.
+- **Monitoring:** keep an opt-in telemetry layer that logs (locally by default, remote
+  on user opt-in) the exit criteria metrics: OCR CER on real documents, MT intelligibility,
+  extraction accuracy, search index size, and startup latency. A quarterly report on
+  these numbers is the entire health check the system needs.
