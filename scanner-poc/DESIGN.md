@@ -80,19 +80,23 @@ because every stage reads/writes it:
 ```json
 {
   "id": "2026-07-09-0001",
-  "source_image": "scans/receipt-0001.jpg",
-  "preprocessed_image": "work/receipt-0001.clean.png",
-  "ocr": {
-    "engine": "tesseract-amh-5.3",
-    "raw_text": "…fidel…",
-    "corrected_text": "…fidel…",
-    "mean_confidence": 0.83,
-    "words": [{"text": "ሰላም", "conf": 0.91, "bbox": [10, 12, 64, 40]}]
-  },
+  "pages": [
+    {
+      "source_image": "scans/receipt-0001.jpg",
+      "preprocessed_image": "work/receipt-0001.clean.png",
+      "ocr": {
+        "engine": "tesseract-amh-5.3",
+        "raw_text": "…fidel…",
+        "corrected_text": "…fidel…",
+        "mean_confidence": 0.83,
+        "words": [{"text": "ሰላም", "conf": 0.91, "bbox": [10, 12, 64, 40]}]
+      }
+    }
+  ],
   "translation": {
     "engine": "nllb-200-distilled-600M",
     "text": "…english…",
-    "segments": [{"am_range": [0, 42], "en_range": [0, 38]}]
+    "segments": [{"page": 0, "am_range": [0, 42], "en_range": [0, 38]}]
   },
   "understanding": {
     "doc_type": "receipt",
@@ -100,6 +104,12 @@ because every stage reads/writes it:
   }
 }
 ```
+
+A document is an **array of pages** from day one, even though Phases 0–2 only ever create
+single-page records. Capture and OCR are per-page; translation and understanding are
+per-document (segments carry a page index). This costs nothing now and is load-bearing
+later: multi-page documents are a paid feature (§7), and the free/pro boundary must be a
+flag on `len(pages)`, not a schema migration.
 
 ---
 
@@ -724,3 +734,70 @@ dictionaries or extracted from parallel corpora — document provenance and lice
 Scanner Phase 1 (Amharic corpus, wordlist, n-gram counts) and Keyboard Phase K1 consume
 the same data assets. Whichever track is built first should place these under a shared,
 documented format so the other track can reuse them unchanged.
+
+---
+
+## 7. Monetization
+
+Monetization is by **limits and gates**, never by degrading what free users already have.
+It applies to the Android app (Phase 3 onward); the Python pipeline and desktop tooling
+stay free.
+
+### 7.1 Principles (non-negotiable)
+
+1. **The free tier must be genuinely useful forever.** Unlimited single-page scan +
+   translate + search is the product's word-of-mouth engine; an Amharic tool with a
+   crippled free tier never reaches the community it serves.
+2. **Accessibility is never paywalled.** Read-aloud (§3.1) and anything a low-vision user
+   depends on stays free at every tier.
+3. **Privacy is not a paid feature.** Offline processing is the default for everyone;
+   nobody is pushed to the cloud to save money.
+4. **Gates never corrupt or hold data hostage.** A free user scanning a 5-page contract
+   gets 5 clean single-page documents — never a blocked scan, never a locked file. On
+   upgrade, a "merge pages into document" tool retroactively combines them: the upgrade
+   *adds* order, it doesn't ransom content.
+5. **A gate is one sentence.** If a tier boundary needs a paragraph to explain, it's the
+   wrong boundary. No usage counters on offline features ("8 of 10 scans used" is hostile
+   and, being client-side, fake anyway).
+
+### 7.2 The ladder
+
+| Tier | Price shape | What it unlocks | Enforcement |
+|---|---|---|---|
+| **Free** | — | Unlimited single-page scans; OCR + translation; cross-lingual search; copy/share digitized text; read-aloud; document actions (§3.2); single-page PDF export | n/a |
+| **Pro** | One-time unlock | **Multi-page documents** (the flagship gate: scan N pages → one document, one translation, one searchable PDF); batch scanning; multi-page searchable-PDF export; CSV export; auto-organization folders | Client-side entitlement flag |
+| **Cloud credits** | Metered / small subscription | LLM summaries & Q&A (§2.4); premium cloud OCR fallback for scans local OCR can't handle; later: encrypted backup/sync | **Server-side** (real enforcement, real marginal cost) |
+| **Institutional / API** | Contract, per-page | Hosted pipeline API for NGOs, banks, courts, archives digitizing at volume — same stages, server deployment | Server-side (future track, not scheduled) |
+
+**Why multi-page is the right Pro gate:** it self-selects exactly the users with
+willingness to pay (contracts, filings, reports, books — professional use), while the
+person scanning one receipt or one letter never hits it. It is a *feature* gate with no
+counter, no reset date, and a one-sentence explanation: *"Free scans one page at a time;
+Pro combines pages into documents."*
+
+### 7.3 Enforcement honesty
+
+- Pro is enforced **client-side** (the feature runs on-device); that is ordinary
+  app-level protection — crackable in principle, effective in practice, provided the
+  **app** ships closed or open-core. Strategy: the pipeline, models, and formats stay
+  open (this document's phases); the polished Android app is the commercial artifact.
+  A determined fork can rebuild the app — that fork also has no brand, no store
+  presence, and no cloud tier, which is the actual moat.
+- Cloud credits and the API are enforced **server-side**, where enforcement is real and
+  price tracks marginal cost. Over time the durable revenue is expected to come from
+  this column, with Pro as the high-margin early revenue.
+- The single technical prerequisite is already in the schema: documents are `pages[]`
+  from Phase 0, so the Pro boundary is literally `len(pages) > 1 requires entitlement` at
+  one enforcement point (document assembly). No other module checks tiers — search,
+  export, and read-aloud work identically on any document they're handed.
+
+### 7.4 Payment rails (decide at Phase 3, not before)
+
+- **Diaspora first:** Google Play Billing works for the US/EU diaspora — who
+  disproportionately need the translation direction and can pay. This is the launch
+  market for Pro.
+- **Ethiopia:** Play Billing coverage is limited; local monetization realistically means
+  telebirr or similar integration, worth doing only after demand is proven. Until then,
+  the free tier *is* the Ethiopian offering — see principle 1.
+- Cloud credits require a payment processor + metering service regardless of store;
+  scope it with the §2.4 opt-in work, since that's the first paid cloud surface.
